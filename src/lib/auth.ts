@@ -34,13 +34,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         const devPassword = process.env.DEV_PASSWORD || "suisi2024";
+        console.log("[auth] DEV_PASSWORD exists:", !!process.env.DEV_PASSWORD);
+        console.log("[auth] password match:", credentials.password === devPassword);
         if (credentials.password !== devPassword) return null;
-        const { prisma } = await import("@/lib/prisma");
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
-        if (!user) return null;
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        try {
+          const { prisma } = await import("@/lib/prisma");
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+          });
+          console.log("[auth] user found:", !!user, user?.role);
+          if (!user) return null;
+          return { id: user.id, name: user.name, email: user.email, role: user.role };
+        } catch (e) {
+          console.error("[auth] DB error:", (e as Error).message);
+          return null;
+        }
       },
     }),
     ...emailProvider,
