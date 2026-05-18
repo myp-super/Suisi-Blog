@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: suisi-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: suisi
+      POSTGRES_PASSWORD: suisi_dev_password
+      POSTGRES_DB: suisi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest
+    container_name: suisi-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

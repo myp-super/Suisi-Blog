@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  image     String?
+  role      String   @default("author")
+  createdAt DateTime @default(now())
+  posts     Post[]
+}
+
+model Post {
+  id         String         @id @default(cuid())
+  title      String
+  slug       String         @unique
+  content    String
+  excerpt    String?
+  coverImage String?
+  published  Boolean        @default(false)
+  featured   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  authorId   String
+  author     User           @relation(fields: [authorId], references: [id])
+  categories PostCategory[]
+  tags       PostTag[]
+  comments   Comment[]
+  project    Project?
+}
+
+model Category {
+  id    String         @id @default(cuid())
+  name  String         @unique
+  slug  String         @unique
+  posts PostCategory[]
+}
+
+model Tag {
+  id    String    @id @default(cuid())
+  name  String    @unique
+  posts PostTag[]
+}
+
+model PostCategory {
+  postId     String
+  categoryId String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  @@id([postId, categoryId])
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  authorName String
+  content    String
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  content     String
+  demoUrl     String?
+  repoUrl     String?
+  coverImage  String?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  postId      String?  @unique
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
+}
